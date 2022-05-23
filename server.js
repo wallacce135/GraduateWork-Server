@@ -64,10 +64,18 @@ app.post('/getArticle', (req, res)=>{
     }) 
 })
 
-app.post('/getComments', (req, res) =>{ 
-    pool.query(`SELECT * FROM comments WHERE (article_id) = ?`, [req.body.article_id], function(err, data){
+app.get('/getComments', (req, res) =>{
+    pool.query(`SELECT comment_id, comment_text, user_login, article_id FROM comments INNER JOIN users ON comments.user_id = users.user_id WHERE (article_id) = ?`, [req.query.article_id], function(err, data){
         if(err) return console.log(err);
         res.send(data);
+    })
+})
+
+app.post("/newComment", (req, res) =>{
+    
+    pool.query('INSERT INTO Comments (comment_text, user_id, article_id) VALUES (?, ?, ?)', [req.body.comment.comment_text, req.body.comment.user_id, req.body.article_id], function(err, data){
+        if(err) console.log(err);
+        res.redirect('/')
     })
 })
 
