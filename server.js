@@ -21,9 +21,9 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.get("/", (req, res) =>{
-    pool.query('SELECT * FROM articles', function(err, data){
+    console.log(req.query.page);
+    pool.query('SELECT * FROM articles LIMIT ?, 4', [JSON.parse(req.query.page)] , function(err, data){
         if(err) return console.log(err);
-
         res.send(data);
     })
 });
@@ -44,7 +44,9 @@ app.post("/login", (req, res) =>{
 })
 
 app.get("/tips", (req, res)=>{
-    pool.query('SELECT * FROM tips', function(err, tips){
+    let number = Math.floor(Math.random() * 7);
+    if(number == 0) number += 1
+    pool.query('SELECT * FROM tips WHERE (tip_id) = ?', [number], function(err, tips){
         if(err) return console.log(err);
         res.send(tips);
     })
@@ -72,8 +74,9 @@ app.get('/getComments', (req, res) =>{
 })
 
 app.post("/newComment", (req, res) =>{
-    
-    pool.query('INSERT INTO Comments (comment_text, user_id, article_id) VALUES (?, ?, ?)', [req.body.comment.comment_text, req.body.comment.user_id, req.body.article_id], function(err, data){
+    pool.query('INSERT INTO Comments (comment_text, user_id, article_id) VALUES (?, ?, ?)', 
+    [req.body.comment.comment_text, req.body.comment.user_id, req.body.article_id], 
+    function(err, data){
         if(err) console.log(err);
         res.redirect('/')
     })
@@ -81,6 +84,21 @@ app.post("/newComment", (req, res) =>{
 
 app.post('/getCurrentUser', (req, res) =>{
     pool.query(`SELECT user_login FROM Users WHERE (user_id) = ?`, [req.body.user_id], function(err, data){
+        if(err) return console.log(err);
+        res.send(data);
+    })
+})
+
+
+app.get('/getUserForProfile', (req, res) =>{
+    pool.query('SELECT * FROM users WHERE (user_id) = ?', [req.query.user_id], function(err, data){
+        if(err) return console.log(err);
+        res.send(data);
+    })
+})
+
+app.get('/getUserArticle', (req, res)=>{
+    pool.query('SELECT * FROM articles WHERE (user_id) = ?', [req.query.user_id], function(err, data){
         if(err) return console.log(err);
         res.send(data);
     })
